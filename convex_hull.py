@@ -95,49 +95,74 @@ class ConvexHullSolver(QObject):
 
 		self.eraseTangent(left)
 		self.eraseTangent(right)
-
+		
 		return comp
 
 	def combine_hulls(self, left, right):
 		upper = self.findTangent(left, right, True)
-		self.showTangent([upper], BLUE)
 		lower = self.findTangent(left, right, False)
-		self.showTangent([lower], BLUE)
+		comp = []
 		i = 0
+		while left[i].p1() != upper.p1():
+			comp.append(left[i])
+			i += 1
+			i = i % len(left)
+		comp.append(upper)
+		i = findIndex(right, lambda x: x.p1() == upper.p2())
+		while right[i].p1() != lower.p2():
+			comp.append(right[i])
+			i += 1
+			i = i % len(right)
+		comp.append(QLineF(lower.p2(), lower.p1()))
+		i = findIndex(left, lambda x: x.p1() == lower.p1())
+		while left[i].p1() != left[0].p1():
+			comp.append(left[i])
+			i += 1
+			i = i % len(left)
+		return comp
 
 	def findTangent(self, left, right, isUpper = True):
 		leftCond = lambda now, next: slope(now) > slope(next)
 		rightCond = lambda now, next: slope(now) < slope(next)
+		nextLeft = lambda arr, x: (x - 1) % len(arr)
+		nextRight = lambda arr, x: (x + 1) % len(arr)
 
 		if (not isUpper):
 			temp = leftCond
 			leftCond = rightCond
 			rightCond = temp
-			
+
+			temp = nextLeft
+			nextLeft = nextRight
+			nextRight = temp
+
 		pi = getExtremePointIndex(left, False)
 		qi = getExtremePointIndex(right, True)
+		
 		temp = QLineF(left[pi].p1(), right[qi].p1())
+
 		self.showTangent([temp], BLUE)
 		changed = True
 		while changed:
 			changed = False
 
-			next = lambda left, right, pi, qi: QLineF(left[pi - 1 % len(left)].p1(), right[qi].p1())
-			while leftCond(temp, next(left, right, pi, qi)):
-				ri = pi - 1 % len(left)
+			
+			while leftCond(temp, QLineF(left[nextLeft(left, pi)].p1(), right[qi].p1())):
+				ri = nextLeft(left, pi)
 				self.eraseTangent([temp])
 				temp = QLineF(left[ri].p1(), right[qi].p1())
+			
 				self.showTangent([temp], BLUE)
 				pi = ri
 				changed = True
 
 			self.eraseTangent([temp])
-			next = lambda left, right, pi, qi: QLineF(left[pi].p1(), right[qi + 1 % len(right)].p1())
-
-			while rightCond(temp, next(left, right, pi, qi)):
-				ri = qi + 1 % len(right)
+			
+			while rightCond(temp, QLineF(left[pi].p1(), right[nextRight(right, qi)].p1())):
+				ri = nextRight(right, qi)
 				self.eraseTangent([temp])
 				temp = QLineF(left[pi].p1(), right[ri].p1())
+				
 				self.showTangent([temp], BLUE)
 				qi = ri
 				changed = True
@@ -160,8 +185,15 @@ def slope(line):
 def getExtremePointIndex(lines, isLeft = True):
 	points = [lines[i].p1() for i in range(len(lines))]
 	val = -1
-	passes = lambda x, y: x.x() > y.x() if isLeft else lambda x, y: x.x() < y.x()
+	passes = lambda x, y: x.x() > y.x()
+	if not isLeft:
+		passes = lambda x, y: x.x() < y.x()
 	for i in range(len(points)):
 		if val < 0 or passes(points[val], points[i]):
 			val = i
 	return val
+def findIndex(arr, pred):
+	for i in range(len(arr)):
+		if pred(arr[i]):
+			return i
+	return -1
