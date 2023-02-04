@@ -240,7 +240,7 @@ class Proj2GUI( QMainWindow ):
 
 		self.randByTime     = QRadioButton('Random')
 		self.randBySeed     = QRadioButton('Seed')
-		self.randSeed       = QLineEdit('0')
+		self.randSeed       = QLineEdit('1')
 
 		self.showRecursion	= QCheckBox('Show Recursion')
 
@@ -289,7 +289,7 @@ class Proj2GUI( QMainWindow ):
 		self.randBySeed.clicked.connect(self._randbyseed)
 
 
-		self.randByTime.setChecked(True)
+		self.randBySeed.setChecked(True)
 		self.distribOval.setChecked(True)
 		self.generateClicked()
 
