@@ -19,7 +19,7 @@ BLUE = (0,0,255)
 
 # Global variable that controls the speed of the recursion automation, in seconds
 #
-PAUSE = 0.25
+PAUSE = .25
 
 #
 # This is the class you have to complete.
@@ -34,13 +34,17 @@ class ConvexHullSolver(QObject):
 # Some helper methods that make calls to the GUI, allowing us to send updates
 # to be displayed.
 
-	def showTangent(self, line, color):
-		self.view.addLines(line.copy(),color)
+	def sleep(self, Time = PAUSE):
 		if self.pause:
-			time.sleep(PAUSE)
+			time.sleep(Time)
+	def showTangent(self, line, color):
+		if self.pause:
+			self.view.addLines(line.copy(),color)
+		self.sleep()
 
 	def eraseTangent(self, line):
-		self.view.clearLines(line.copy())
+		if self.pause:
+			self.view.clearLines(line.copy())
 
 	def blinkTangent(self,line,color):
 		self.showTangent(line,color)
@@ -48,8 +52,7 @@ class ConvexHullSolver(QObject):
 
 	def showHull(self, polygon, color):
 		self.view.addLines(polygon.copy(),color)
-		if self.pause:
-			time.sleep(PAUSE)
+		self.sleep()
 
 	def eraseHull(self,polygon):
 		self.view.clearLines(polygon)
@@ -86,12 +89,12 @@ class ConvexHullSolver(QObject):
 			return [QLineF(points[i],points[(i+1)%count]) for i in range(count)]
 		
 		left = self.solve_hull(points[:count//2])
-		right = self.solve_hull(points[count//2:])
-
 		self.showTangent(left, RED)
+		right = self.solve_hull(points[count//2:])
 		self.showTangent(right, RED)
 
 		comp = self.combine_hulls(left, right)
+
 
 		self.eraseTangent(left)
 		self.eraseTangent(right)
@@ -152,7 +155,7 @@ class ConvexHullSolver(QObject):
 				self.eraseTangent([temp])
 				temp = QLineF(left[ri].p1(), right[qi].p1())
 			
-				self.showTangent([temp], BLUE)
+				self.showTangent([temp], BLUE)				
 				pi = ri
 				changed = True
 
