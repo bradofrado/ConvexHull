@@ -101,9 +101,6 @@ class ConvexHullSolver(QObject):
 	def combine_hulls(self, left, right):
 		upper = self.findUpperTangent(left, right)
 
-	def isUpperTangent(self, left, right):
-		
-
 	def findUpperTangent(self, left, right):
 		pi = getExtremePointIndex(left, False)
 		qi = getExtremePointIndex(right, True)
@@ -113,29 +110,27 @@ class ConvexHullSolver(QObject):
 		while changed:
 			changed = False
 
-			prev = temp
-			while slope(temp) <= slope(prev):
+			next = lambda left, right, pi, qi: QLineF(left[pi - 1 % len(left)].p1(), right[qi].p1())
+			while slope(temp) > slope(next(left, right, pi, qi)):
 				ri = pi - 1 % len(left)
-				prev = temp
 				self.eraseTangent([temp])
 				temp = QLineF(left[ri].p1(), right[qi].p1())
 				self.showTangent([temp], BLUE)
 				pi = ri
 				changed = True
-			pi = pi + 1 % len(left)
+
 			self.eraseTangent([temp])
-			temp = prev
-			while slope(temp) >= slope(prev):
+			next = lambda left, right, pi, qi: QLineF(left[pi].p1(), right[qi + 1 % len(right)].p1())
+
+			while slope(temp) < slope(next(left, right, pi, qi)):
 				ri = qi + 1 % len(right)
 				self.eraseTangent([temp])
-				prev = temp
 				temp = QLineF(left[pi].p1(), right[ri].p1())
 				self.showTangent([temp], BLUE)
 				qi = ri
 				changed = True
-			qi = qi - 1 % len(right)
+				
 			self.eraseTangent([temp])
-			temp = prev
 		
 def sortClockwise(points):
 	assert(len(points) > 0)
