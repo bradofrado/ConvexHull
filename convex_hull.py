@@ -81,6 +81,7 @@ class ConvexHullSolver(QObject):
 		# object can be created with two QPointF objects corresponding to the endpoints
 		self.showHull(polygon,RED)
 		self.showText('Time Elapsed (Convex Hull): {:3.3f} sec'.format(t4-t3))
+		return polygon, t4 - t1
 
 	def solve_hull(self, points): 
 		count = len(points)
@@ -130,6 +131,7 @@ class ConvexHullSolver(QObject):
 		nextLeft = lambda arr, x: (x - 1) % len(arr)
 		nextRight = lambda arr, x: (x + 1) % len(arr)
 
+		#The upper and lower tangents are the same except reversing these functions
 		if (not isUpper):
 			temp = leftCond
 			leftCond = rightCond
@@ -186,11 +188,12 @@ def sortClockwise(points):
 def slope(line):
 	return line.dy() / line.dx()
 def getExtremePointIndex(lines, isLeft = True):
+	if isLeft:
+		return 0
 	points = [lines[i].p1() for i in range(len(lines))]
 	val = -1
-	passes = lambda x, y: x.x() > y.x()
-	if not isLeft:
-		passes = lambda x, y: x.x() < y.x()
+	passes = passes = lambda x, y: x.x() < y.x()
+		
 	for i in range(len(points)):
 		if val < 0 or passes(points[val], points[i]):
 			val = i
