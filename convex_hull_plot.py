@@ -13,9 +13,7 @@ class ConvexHullPlot():
 		self.m, = plt.plot([], [])
 
 	def plotAll(self, C = 1):
-		data = []
-		done = lambda x, time: data.append(time)
-		self.getTimesData()
+		data = self.getTimesData()
 
 		X = np.arange(0, self.times[-1], 10)
 		self.m.set_xdata(X)
@@ -25,7 +23,7 @@ class ConvexHullPlot():
 
 		plt.show()
 	
-	def getTimesData(self, done):
+	def getTimesData(self):
 		data = []
 		for time in self.times:
 			points = randomDistributed(time)
@@ -34,7 +32,6 @@ class ConvexHullPlot():
 			self.solver.solve_hull(points)
 			t2 = t.time()
 			diff = t2 - t1
-			done(time, diff)
 			data.append(diff)
 		return data
 
